@@ -1,0 +1,154 @@
+#include <LiquidCrystal.h>
+
+LiquidCrystal lcd(13, 12, 6, 5, 4, 3);
+const int analogIn = A1;
+
+// Defining Variables
+int RawValue= 0;
+double Voltage = 0;
+double tempC = 0;
+double tempF = 0;
+
+int sensor = 2;              // the pin that the sensor is atteched to
+int state = LOW;             // by default, no motion detected
+int val = 0;                 // variable to store the sensor status (value)
+
+const int IN3 = 8; 
+const int IN4 = 10;
+const int ENB = 9;  
+void setup() {
+  lcd.begin(16, 2);
+  
+  pinMode(ENB, OUTPUT);
+  pinMode(IN3, OUTPUT);
+  pinMode(IN4, OUTPUT);
+  
+  pinMode(sensor, INPUT);    // initialize sensor as an input
+  Serial.begin(9600);        // initialize serial
+  delay(500);//Delay to let system boot
+  Serial.println("DHT11 Humidity & temperature Sensor\n\n");
+  delay(1000);//Wait before accessing Sensor
+}
+
+void loop(){
+  val = digitalRead(sensor); 
+  
+  // read sensor value
+  if (val == HIGH) {
+    lcd.clear();
+    lcd.print("Motion detected!");
+    delay(2000);
+   Serial.println("Motion detected!"); // check if the sensor is HIGH
+
+    
+   if(tempC < 18){
+    digitalWrite(IN3,HIGH);
+    digitalWrite(IN4,LOW);
+    analogWrite(ENB,0);
+     
+     RawValue = analogRead(analogIn);
+  	Voltage = (RawValue / 1023.0) * 5000; // 5000 to get millivots.
+  	tempC = (Voltage-500) * 0.1; // 500 is the offset 
+  	Serial.print("T= "); 
+  	Serial.print(tempC,1);
+     Serial.print(" C");
+    
+    lcd.clear(); 
+    lcd.setCursor(0,0); 
+    lcd.print("T: ");
+    lcd.print(tempC);
+    lcd.print("C"); 
+             
+    lcd.print(" S: 0"); 
+     
+    }
+    
+    else  if(tempC >= 18 && tempC < 24){
+     analogWrite(ENB,100);
+     digitalWrite(IN3,HIGH);
+     digitalWrite(IN4,LOW);
+     
+     RawValue = analogRead(analogIn);
+  	Voltage = (RawValue / 1023.0) * 5000; // 5000 to get millivots.
+  	tempC = (Voltage-500) * 0.1; // 500 is the offset 
+  	Serial.print("T= "); 
+  	Serial.print(tempC,1);
+     Serial.print(" C");
+    lcd.clear(); 
+    lcd.setCursor(0,0);  
+    lcd.print("T: ");
+    lcd.print(tempC);
+    lcd.print("C"); 
+
+    lcd.print(" S: 100"); 
+     
+    }
+    
+     else  if(tempC >= 24 && tempC < 28){
+     analogWrite(ENB,200);
+     digitalWrite(IN3,HIGH);
+     digitalWrite(IN4,LOW);
+     
+     RawValue = analogRead(analogIn);
+  	Voltage = (RawValue / 1023.0) * 5000; // 5000 to get millivots.
+  	tempC = (Voltage-500) * 0.1; // 500 is the offset 
+  	Serial.print("T= "); 
+  	Serial.print(tempC,1);
+     Serial.print(" C");
+         
+    lcd.clear(); 
+    lcd.setCursor(0,0);  
+    lcd.print("T: ");
+    lcd.print(tempC);
+    lcd.print("C"); 
+            
+
+    lcd.print(" S: 200"); 
+     
+    }
+      else  if(tempC >= 28){
+     analogWrite(ENB,255);
+     digitalWrite(IN3,HIGH);
+     digitalWrite(IN4,LOW);
+     
+     RawValue = analogRead(analogIn);
+  	Voltage = (RawValue / 1023.0) * 5000; // 5000 to get millivots.
+  	tempC = (Voltage-500) * 0.1; // 500 is the offset 
+  	Serial.print("T= "); 
+  	Serial.print(tempC,1);
+     Serial.print(" C");
+         
+    lcd.clear(); 
+    lcd.setCursor(0,0);  
+    lcd.print("T: ");
+    lcd.print(tempC);
+    lcd.print("C"); 
+            
+    lcd.print(" S: 255"); 
+     
+    }
+  delay(30000);  //iterate every 5 seconds
+
+    
+    if (state == LOW) {
+      state = HIGH;       // update variable state to HIGH
+    }
+  } 
+  else {
+    
+    delay(1000); 
+    
+      if (state == HIGH){
+        
+        digitalWrite(IN3,HIGH);
+    	digitalWrite(IN4,LOW);
+    	analogWrite(ENB,0);
+        
+        lcd.clear();
+        lcd.print("Motion stopped!");
+        delay(2000);
+        Serial.println("Motion stopped!");
+        state = LOW;       // update variable state to LOW
+    }
+  }
+}
